@@ -1,3 +1,4 @@
+
 const $cru = (el) => document.querySelector(el)
 const $crus = (el) => document.querySelectorAll(el)
 
@@ -16,10 +17,21 @@ const $C = (config = false) => {
     $cruLoadEvents()
 }
 
+const $cruLoadElementEvents = () => {
+    $crus('[c-remove]:not(.c-form):not(.loaded)').forEach((el) => {
+        el.classList.add('loaded')
+        el.addEventListener('click', (e) => {
+            const selector = el.getAttribute('c-remove')
+            selector.split(';').forEach(sel => $crus(sel).forEach(e => e.remove()))
+        })
+    })
+}
+
 const $cruLoadEvents = () => {
     $cruLoadRequests()
     $cruLoadFormIntercept()
     $cruLoadAllContainers()
+    $cruLoadElementEvents()
 }
 
 const $cruLoadContainer = async (el) => {
@@ -144,6 +156,7 @@ const $cruLoadFormIntercept = () => {
             const target = form.getAttribute('c-target') || false;
             const reloadContainer = form.getAttribute('c-reload-container') || false;
             const callback = form.getAttribute('c-callback') || false
+            const removeClosest = form.getAttribute('c-remove-closest') || false
             const isRead = $cruIsRead(method)
 
             const data = Object.fromEntries(new FormData(e.target).entries());
@@ -161,6 +174,7 @@ const $cruLoadFormIntercept = () => {
             if (append) $cru(append).insertAdjacentHTML('beforeend', content)
             if (prepend) $cru(prepend).insertAdjacentHTML('afterbegin', content)
             if (target) $cru(target).innerHTML = content
+            if (removeClosest) form.closest(removeClosest).remove()
             if (reset) form.reset()
             if (reloadContainer) {
                 $cruLoadContainer(form)
